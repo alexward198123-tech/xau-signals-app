@@ -15,11 +15,7 @@ jobs:
         with:
           flutter-version: 'stable'
 
-      - name: Create Flutter project if missing
-        run: |
-          if [ ! -d "android" ]; then
-            flutter create .
-          fi
+      
 
       - name: Install dependencies
         run: flutter pub get
