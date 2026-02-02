@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const XauSignalsApp());
+  runApp(const MyApp());
 }
 
-class XauSignalsApp extends StatelessWidget {
-  const XauSignalsApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: Center(
+        appBar: AppBar(title: const Text('XAU Signals')),
+        body: const Center(
           child: Text(
-            'XAU Signals App\nBuild Successful',
-            textAlign: TextAlign.center,
+            'APK Build Test ✅',
             style: TextStyle(fontSize: 22),
           ),
         ),
