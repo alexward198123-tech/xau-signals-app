@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           const _ProBackground(),
           SafeArea(
-            child: Padding(
+            child: const Text("API-ready build"),
               padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
