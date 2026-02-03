@@ -1,2 +1,2 @@
 # xau-signals-app
-XAUUSD trading signals mobile app
+XAUUSD trading signals. mobile app
