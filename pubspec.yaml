@@ -11,3 +11,5 @@ dependencies:
 
 flutter:
   uses-material-design: true
+dependencies:
+  http: ^1.2.2
