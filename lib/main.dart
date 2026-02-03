@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
 }
 
+/// =======================
+/// APP
+/// =======================
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -16,8 +21,76 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+/// =======================
+/// HOME SCREEN (API-BACKED)
+/// =======================
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _loading = false;
+
+  String _signalLine = "Tap Get Signal";
+  String _details = "";
+
+  // ✅ EDIT THESE TWO LINES
+  static const String apiUrl = "https://YOUR-WORKER.yourname.workers.dev/api/signal";
+  static const String apiKey = "YOUR_SECRET_KEY";
+
+  Future<void> _getSignal() async {
+    setState(() {
+      _loading = true;
+      _details = "";
+    });
+
+    try {
+      final res = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          "x-api-key": apiKey,
+          "accept": "application/json",
+        },
+      );
+
+      if (res.statusCode != 200) {
+        throw Exception("API error ${res.statusCode}: ${res.body}");
+      }
+
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+
+      final symbol = (data["symbol"] ?? "XAUUSD").toString();
+      final action = (data["action"] ?? "WAIT").toString();
+      final entry = (data["entry"] ?? "MARKET").toString();
+      final tf = (data["timeframe"] ?? "").toString();
+      final reason = (data["reason"] ?? "").toString();
+
+      final sl = data["sl"];
+      final tp = data["tp"];
+      final confidence = data["confidence"];
+
+      setState(() {
+        _signalLine = "$action $symbol @ $entry 🚀";
+        _details = [
+          if (tf.isNotEmpty) "TF: $tf",
+          if (confidence != null) "Conf: $confidence",
+          if (sl != null) "SL: $sl",
+          if (tp != null) "TP: $tp",
+          if (reason.isNotEmpty) "Why: $reason",
+        ].join("   •   ");
+      });
+    } catch (e) {
+      setState(() {
+        _signalLine = "Couldn’t load signal";
+        _details = e.toString();
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +98,6 @@ class HomeScreen extends StatelessWidget {
       body: Stack(
         children: [
           const _ProBackground(),
-
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -35,22 +107,21 @@ class HomeScreen extends StatelessWidget {
                   const _TopBar(),
                   const SizedBox(height: 24),
 
-                  const Text(
-                    "XAUUSD",
-                    style: TextStyle(
-                      fontSize: 34,
+                  Text(
+                    _signalLine,
+                    style: const TextStyle(
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
                       color: Colors.white,
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  const Text(
-                    "Signals – clean, simple, professional",
-                    style: TextStyle(
-                      fontSize: 15,
+                  Text(
+                    _details,
+                    style: const TextStyle(
+                      fontSize: 14,
                       color: Colors.white70,
                     ),
                   ),
@@ -58,10 +129,8 @@ class HomeScreen extends StatelessWidget {
                   const Spacer(),
 
                   _PrimaryButton(
-                    onPressed: () {
-                      // TODO: action
-                    },
-                    child: const Text("API-ready build"),
+                    onPressed: _loading ? null : _getSignal,
+                    child: Text(_loading ? "Loading..." : "Get Signal"),
                   ),
 
                   const SizedBox(height: 24),
@@ -75,12 +144,11 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/* =======================
-   SUPPORTING WIDGETS
-   ======================= */
-
+/// =======================
+/// BUTTON
+/// =======================
 class _PrimaryButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Widget child;
 
   const _PrimaryButton({
@@ -99,6 +167,7 @@ class _PrimaryButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           backgroundColor: Colors.amber,
           foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: child,
       ),
@@ -106,14 +175,17 @@ class _PrimaryButton extends StatelessWidget {
   }
 }
 
+/// =======================
+/// TOP BAR
+/// =======================
 class _TopBar extends StatelessWidget {
-  const _TopBar({super.key});
+  const _TopBar();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
+      children: [
         Text(
           "XAU Signals",
           style: TextStyle(color: Colors.white, fontSize: 18),
@@ -124,8 +196,11 @@ class _TopBar extends StatelessWidget {
   }
 }
 
+/// =======================
+/// BACKGROUND
+/// =======================
 class _ProBackground extends StatelessWidget {
-  const _ProBackground({super.key});
+  const _ProBackground();
 
   @override
   Widget build(BuildContext context) {
